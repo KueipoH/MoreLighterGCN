@@ -11,7 +11,13 @@ C++ evaluation for top-k recommendation
 import os
 import sys
 import threading
-import tensorflow as tf
+
+import tensorflow.compat.v1 as tf
+sess = tf.compat.v1.Session()
+tf.disable_v2_behavior() 
+tf.compat.v1.disable_eager_execution()
+
+
 from tensorflow.python.client import device_lib
 from utility.helper import *
 from utility.batch_test import *
@@ -48,57 +54,57 @@ class LightGCN(object):
         Create Placeholder for Input Data & Dropout.
         '''
         # placeholder definition
-        self.users = tf.placeholder(tf.int32, shape=(None,))
-        self.pos_items = tf.placeholder(tf.int32, shape=(None,))
-        self.neg_items = tf.placeholder(tf.int32, shape=(None,))
+        self.users = tf.compat.v1.placeholder(tf.int32, shape=(None,))
+        self.pos_items = tf.compat.v1.placeholder(tf.int32, shape=(None,))
+        self.neg_items = tf.compat.v1.placeholder(tf.int32, shape=(None,))
         
         self.node_dropout_flag = args.node_dropout_flag
-        self.node_dropout = tf.placeholder(tf.float32, shape=[None])
-        self.mess_dropout = tf.placeholder(tf.float32, shape=[None])
+        self.node_dropout = tf.compat.v1.placeholder(tf.float32, shape=[None])
+        self.mess_dropout = tf.compat.v1.placeholder(tf.float32, shape=[None])
         with tf.name_scope('TRAIN_LOSS'):
-            self.train_loss = tf.placeholder(tf.float32)
+            self.train_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('train_loss', self.train_loss)
-            self.train_mf_loss = tf.placeholder(tf.float32)
+            self.train_mf_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('train_mf_loss', self.train_mf_loss)
-            self.train_emb_loss = tf.placeholder(tf.float32)
+            self.train_emb_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('train_emb_loss', self.train_emb_loss)
-            self.train_reg_loss = tf.placeholder(tf.float32)
+            self.train_reg_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('train_reg_loss', self.train_reg_loss)
         self.merged_train_loss = tf.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES, 'TRAIN_LOSS'))
         
         
         with tf.name_scope('TRAIN_ACC'):
-            self.train_rec_first = tf.placeholder(tf.float32)
+            self.train_rec_first = tf.compat.v1.placeholder(tf.float32)
             #record for top(Ks[0])
             tf.summary.scalar('train_rec_first', self.train_rec_first)
-            self.train_rec_last = tf.placeholder(tf.float32)
+            self.train_rec_last = tf.compat.v1.placeholder(tf.float32)
             #record for top(Ks[-1])
             tf.summary.scalar('train_rec_last', self.train_rec_last)
-            self.train_ndcg_first = tf.placeholder(tf.float32)
+            self.train_ndcg_first = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('train_ndcg_first', self.train_ndcg_first)
-            self.train_ndcg_last = tf.placeholder(tf.float32)
+            self.train_ndcg_last = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('train_ndcg_last', self.train_ndcg_last)
         self.merged_train_acc = tf.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES, 'TRAIN_ACC'))
 
         with tf.name_scope('TEST_LOSS'):
-            self.test_loss = tf.placeholder(tf.float32)
+            self.test_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_loss', self.test_loss)
-            self.test_mf_loss = tf.placeholder(tf.float32)
+            self.test_mf_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_mf_loss', self.test_mf_loss)
-            self.test_emb_loss = tf.placeholder(tf.float32)
+            self.test_emb_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_emb_loss', self.test_emb_loss)
-            self.test_reg_loss = tf.placeholder(tf.float32)
+            self.test_reg_loss = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_reg_loss', self.test_reg_loss)
         self.merged_test_loss = tf.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES, 'TEST_LOSS'))
 
         with tf.name_scope('TEST_ACC'):
-            self.test_rec_first = tf.placeholder(tf.float32)
+            self.test_rec_first = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_rec_first', self.test_rec_first)
-            self.test_rec_last = tf.placeholder(tf.float32)
+            self.test_rec_last = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_rec_last', self.test_rec_last)
-            self.test_ndcg_first = tf.placeholder(tf.float32)
+            self.test_ndcg_first = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_ndcg_first', self.test_ndcg_first)
-            self.test_ndcg_last = tf.placeholder(tf.float32)
+            self.test_ndcg_last = tf.compat.v1.placeholder(tf.float32)
             tf.summary.scalar('test_ndcg_last', self.test_ndcg_last)
         self.merged_test_acc = tf.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES, 'TEST_ACC'))
         """
